@@ -20,8 +20,6 @@ class CustomMovieData{
 
 	function register(){
 			add_action('wp_enqueue_scripts',array($this, 'enqueue'));
-
-			add_action('admin-menu', array($this,'add_admin_pages'));
 		}
 
 	function enqueue(){
@@ -30,7 +28,7 @@ class CustomMovieData{
         //wp_enqueue_style('mystyle');
 	}
 
-	protected function create_post_type(){
+	 function create_post_type(){
 		//Hook into the 'init' action
 		add_action( 'init', array($this, 'movie_init') );
 		//hook into the init action and call create_Types_nonhierarchical_taxonomy when it fires
@@ -128,15 +126,6 @@ if (class_exists('CustomMovieData')){
 
 }
 
-//activation
-require_once plugin_dir_path(__FILE__).'inc/custom-activate.php';
-register_activation_hook(__FILE__, array('CustomActivate', 'activate') );
-
-//deactivation
-require_once plugin_dir_path(__FILE__).'inc/custom-deactivate.php';
-register_deactivation_hook(__FILE__, array('CustomDeactivate', 'deactivate') );
-
-
 
 add_shortcode('movie-button',function($atts,$content=null){
   ?>
@@ -148,7 +137,7 @@ add_shortcode('movie-button',function($atts,$content=null){
   	</div>
   </div>
   <div class="container add-movie">
-  	<form  action="" id="add-movie"  >
+  	<form  action="" id="add-movie" method="post" >
 	  	<div class="form-group">
 	  		<label for="name">Movie Name:</label>
 	  		<input type="text" class="form-control" placeholder="Enter Movie Name" id="name" name="movie_name">
@@ -170,7 +159,7 @@ add_shortcode('movie-button',function($atts,$content=null){
   		<div class="form-group">
 	  		<label for="genre">Select Genre:</label>
 	  		<select name="genre" class="form-control" id="genre">
-	  		<option value="" >Select Genre</option>
+	  		<option value="" >--Select Genre--</option>
 	  	<?php foreach($posts as $post){?>
 	  		<option value="<?php echo $post->term_taxonomy_id;?>" ><?php echo $post->name; ?></option>
 	  	<?php } ?>
@@ -195,6 +184,8 @@ function displayFm(){
    </script>
  
   <?php
+
+require_once(ABSPATH.'wp-admin/includes/upgrade.php');
   global $wpdb;
   if(isset($_POST['submit'])){
   	$name=$_POST['movie_name'];
@@ -202,32 +193,31 @@ function displayFm(){
     $genre=$_POST['genre'];
 
   // Create post object
- 	$user_id = get_current_user_id();
- //	echo $user_id;
+ 	//$user_id = get_current_user_id();
+ echo $user_id;
+ echo $name;
+ echo $movie_desc;
 
 // Insert the post into the database
-	$post_id = wp_insert_post(array (
-		'post_author'=>$user_id,
+	$post_id = $wpdb->insert_post(array (
+	'post_author'=>$user_id,
    'post_type' => 'movie',
-   'post_title' => $name,
-   'post_content' => $movie_desc,
+   'post_title' => 'hello',
+   'post_content' => 'movie_desc',
    'post_status' => 'publish',
    'comment_status' => '',   // if you prefer
-   'ping_status' => '',      // if you prefer
+   'ping_status' => 'open',      // if you prefer
 ));
 //$query="Insert into $wpdb->posts ('post_author','post_type','post_title', 'post_content', 'post_status' , 'comment_status') values($user_id, 'movie', '$name','$movie_desc', 'publish','')";
 //$rs=mysql_query($query);
                         
-}
-
-//display
-?>
+}?>
 <div class="container" >
 	<h2>Movie Block Appearance</h2>
 	<div id="gridbox" class="grid">
         <?php  $args=array(
               'post_type'=> 'movie',
-            'posts_per_page' => 6,
+            'posts_per_page' => 10,
             'status'  => 'published');
             $query=new WP_Query($args);
 
@@ -259,4 +249,9 @@ function displayFm(){
 /* Restore original Post Data */
 wp_reset_postdata();
 
+//display
+
+
+
 });
+?>
