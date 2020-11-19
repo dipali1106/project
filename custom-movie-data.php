@@ -232,13 +232,14 @@ require_once(ABSPATH.'wp-admin/includes/upgrade.php');
                 <a href="<?php the_permalink(); ?>">
                  <h5 class="title"><?php the_title() ;?></h5>
                 </a>
-              </div>    
+              </div>  
+
        <?php
             }
         } 
         else {
             // no Books found
-            ?><h1>Sorry...</h1>
+            ?><h2>Sorry...</h2>
           <p><?php _e('Sorry, no books found.'); ?></p>
           <?php
             } ?>
