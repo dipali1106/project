@@ -448,13 +448,16 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
 	            $movie_desc=$_POST['update_desc'];
 	            $genre=$_POST['update_genre'];
 	            echo $name;
-	            $query=$wpdb->update('wp_term_relationships', 
+	            /*$query=$wpdb->update('wp_term_relationships', 
 			        array(
 			          'term_taxonomy_id'      => $genre
 			        ),
 			        array(
 			          'object_id'   =>$id)    
-			        );  
+			        ); */
+
+			        $wpdb->query($wpdb->prepare("UPDATE 'wp_term_relationships' SET term_taxonomy_id=$genre
+			         WHERE object_id=$id")); 
 	             $my_post = array(
 			      'ID'           => $id,
 			      //'post_author'=>$user_id,
