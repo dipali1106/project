@@ -19,7 +19,7 @@ class CustomMovieData{
 	
 
 	function register(){
-			add_action('wp_enqueue_scripts',array($this, 'enqueue'));
+			add_action('wp_enqueue_script',array($this, 'enqueue'));
 		}
 
 	function enqueue(){
@@ -128,12 +128,17 @@ if (class_exists('CustomMovieData')){
 
 
 add_shortcode('movie-button',function($atts,$content=null){
+	wp_enqueue_style( 'style-css', plugin_dir_url( __FILE__ ) .'/asset/mystyle.css' );
   ?>
   <div class="container" >
   	<div class="btn-group">
 	  	<button class="button" value="button" >ADD MOVIES</button>
+	  	
 	  	<button class="button">EDIT MOVIES</button>
+	  	
 	  	<button class="button">DELETE MOVIES</button>
+	  	
+	  </div>
   	</div>
   </div>
   <div class="container add-movie">
@@ -145,9 +150,9 @@ add_shortcode('movie-button',function($atts,$content=null){
 	
 	  	<div class="form-group">
 		  <label for="description">Movie Description:</label>
-		  <input type="text" class="form-control" placeholder="Enter Movie Description" id="description" name="movie_desc">
+		  <textarea type="text" class="form-control" placeholder="Enter Movie Description" id="description" name="movie_desc"></textarea>
 	 	 </div>
-  	<?php
+  		<?php
 
   		global $wpdb;
    		$posts = $wpdb->get_results( "SELECT $wpdb->term_taxonomy.term_taxonomy_id, $wpdb->terms.name 
@@ -171,9 +176,10 @@ add_shortcode('movie-button',function($atts,$content=null){
 <style>
 	.form-group{
 		margin-top: 10px;
+		margin-bottom: 5px;
 	}
 	.form-control{
-		width: 90%;
+		width: 100%;
 	}
 </style>
 <script>
@@ -185,34 +191,91 @@ function displayFm(){
  
   <?php
 
-require_once(ABSPATH.'wp-admin/includes/upgrade.php');
+//require_once(ABSPATH.'wp-admin/includes/upgrade.php');
   global $wpdb;
-  if(isset($_POST['submit'])){
+  if(isset($_POST['save-btn'])){
   	$name=$_POST['movie_name'];
     $movie_desc=$_POST['movie_desc'];
     $genre=$_POST['genre'];
 
   // Create post object
- 	//$user_id = get_current_user_id();
- echo $user_id;
- echo $name;
- echo $movie_desc;
+ 	$user_id = get_current_user_id();
+
 
 // Insert the post into the database
-	$post_id = $wpdb->insert_post(array (
+	$post_id = wp_insert_post(array (
 	'post_author'=>$user_id,
    'post_type' => 'movie',
-   'post_title' => 'hello',
-   'post_content' => 'movie_desc',
+   'post_title' => $name,
+   'post_content' => $movie_desc,
    'post_status' => 'publish',
    'comment_status' => '',   // if you prefer
    'ping_status' => 'open',      // if you prefer
 ));
-//$query="Insert into $wpdb->posts ('post_author','post_type','post_title', 'post_content', 'post_status' , 'comment_status') values($user_id, 'movie', '$name','$movie_desc', 'publish','')";
-//$rs=mysql_query($query);
+	//echo $post_id;
+	$query=$wpdb->insert('wp_term_relationships', 
+    array(
+      'object_id'          => $post_id,
+      'term_taxonomy_id'       => $genre
+    ),
+    array(
+      '%d',
+      '%d'
+    ) 
+  ); 
                         
 }?>
 <div class="container" >
+	<h2>All Movies</h2>
+	<div id="gridbox" class="grid">
+        <?php  $args=array(
+              'post_type'=> 'movie',
+            'posts_per_page' => 10,
+            'status'  => 'published');
+            $query=new WP_Query($args);
+
+        // The Loop
+        if ( $query->have_posts() ) 
+        {
+            while ( $query->have_posts() )
+             {
+                $query->the_post();?>
+
+                <div class="grid-item">
+                <ul>
+                 <li><h5 class="title"><?php the_title() ;?></h5>
+                 <h6 class="content"><?php the_content() ;?></h6></li></ul>
+                
+              </div>    
+       <?php
+            }
+        } 
+        else {
+            // no Books found
+            ?><h1>Sorry...</h1>
+          <p><?php _e('Sorry, no books found.'); ?></p>
+          <?php
+            } ?>
+    </div>
+</div>
+
+<?php
+/* Restore original Post Data */
+wp_reset_postdata();
+
+//display
+
+
+
+});
+?>
+
+<?php 
+
+add_shortcode('movie-delete-button',function($atts,$content=null){
+	wp_enqueue_style( 'style-css', plugin_dir_url( __FILE__ ) .'/asset/mystyle.css' );
+  ?>
+  <div class="container" >
 	<h2>Movie Block Appearance</h2>
 	<div id="gridbox" class="grid">
         <?php  $args=array(
@@ -229,20 +292,44 @@ require_once(ABSPATH.'wp-admin/includes/upgrade.php');
                 $query->the_post();?>
 
                 <div class="grid-item">
-                <a href="<?php the_permalink(); ?>">
-                 <h5 class="title"><?php the_title() ;?></h5>
-                </a>
-              </div>  
-
+                	<form method="post" action="">
+                <table>
+                	<input type="hidden" name="id" value="<?php the_ID() ?>" >
+                 <tr>
+                 <th width="130"> Movie Title </th>
+                 <td width="200"><h6 class="title"><?php the_title() ;?></h6></td></tr>
+                 <tr><th width="130">Movie Description</th>
+                 <td width="200"><h6 class="content"><?php the_content(); ?></h6></td></tr>
+                 <tr><th width="130">Movie Author</th>
+                 <td width="200"><h6 class="content"><?php the_author(); ?></h6></td></tr>
+             	</table>
+             	<button type="submit" value="submit" name="btn">Delete</button>
+                </form>
+              </div>    
        <?php
+	       
+	       	if(isset($_POST['btn'])){
+	       	echo "<script type='text/javascript'>
+	        window.location=document.location.href;
+	        </script>";
+
+	         global $wpdb;
+	       	$id=$_POST['id'];
+	       	//echo $id;
+	       	wp_delete_post($id,$force_delete = false);
+	       	wp_reset_data();
+	       
+	      		 }
+	 		  
             }
         } 
         else {
-            // no Books found
-            ?><h2>Sorry...</h2>
-          <p><?php _e('Sorry, no books found.'); ?></p>
+            // no movies found
+            ?><h1>Sorry...</h1>
+          <p><?php _e('Sorry, no movies found.'); ?></p>
           <?php
-            } ?>
+            } 
+          ?>
     </div>
 </div>
 
@@ -250,8 +337,123 @@ require_once(ABSPATH.'wp-admin/includes/upgrade.php');
 /* Restore original Post Data */
 wp_reset_postdata();
 
-//display
 
+});?>
+
+<?php 
+//For Editing Movie
+add_shortcode('movie-edit-button',function($atts,$content=null){
+	wp_enqueue_style( 'style-css', plugin_dir_url( __FILE__ ) .'/asset/mystyle.css' );
+  ?>
+  <div class="container" >
+	<h2>Movie Block Appearance</h2>
+	<div id="gridbox" class="grid">
+        <?php  $args=array(
+            'post_type'=> 'movie',
+            'posts_per_page' => 10,
+            'status'  => 'published');
+            $query=new WP_Query($args);
+
+        // The Loop
+        if ( $query->have_posts() ) 
+        {
+            while ( $query->have_posts() )
+             {
+                $query->the_post();
+                $id=get_the_ID();
+                global $wpdb;
+   			$genre = $wpdb->get_results("SELECT term_taxonomy_id, $wpdb->terms.name  FROM $wpdb->term_relationships  INNER JOIN $wpdb->terms 
+   				ON $wpdb->term_relationships.term_taxonomy_id=$wpdb->terms.term_id WHERE $wpdb->term_relationships.object_id = $id");
+   			
+   				?>
+
+                <div class="grid-item">
+                	<form method="post" action="">
+                <table>
+                	<input type="hidden" name="id" value="<?php the_ID() ?>" >
+                 <tr>
+                 <th width="130"> Movie Title </th>
+                 <td width="200"><h6 class="title"><?php the_title() ;?></h6>
+                 	<input type="hidden" name="title" value="<?php the_title() ?>" ></td></tr>
+                 <tr><th width="130">Movie Description</th>
+                 <td width="200"><h6 class="content"><?php the_content(); ?></h6>
+                 	<input type="hidden" name="content" value="<?php the_content() ?>" ></td></tr>
+                 <tr><th width="130">Movie Author</th>
+                 <td width="200"><h6 class="author"><?php the_author(); ?></h6></td></tr>
+                 <tr><th width="130">Movie Genre</th>
+                 <td width="200"><h6 class="genre"><?php echo $genre[0]->name; ?></h6>
+                 	<input type="hidden" name="genre" value="<?php $genre[0]->name; ?>" ></td></tr>
+             	</table>
+             	<button type="submit" value="submit" name="btn">Edit</button>
+                </form>
+              </div>    
+       <?php
+	       
+	       if(isset($_POST['btn'])){
+	       	$id=$_POST['id'];
+	       	$title=$_POST['title'];
+	       	$content=$_POST['content'];
+	       	$genre=$_POST['genre'];
+	       	add_action('to_open_form', 'open_editing_form');
+	       	if (!function_exists('open_editing_form'))
+	       	 {
+	       		function open_editing_form()
+	       		{
+	       			
+	       			?>
+	       		<div class="container add-movie">
+  					
+  				<form  action="" id="add-movie" method="post" >
+			  	<div class="form-group">
+			  		<label for="name">Movie Name:</label>
+			  		<input type="text" class="form-control"  id="name" name="movie_name" value="<?php echo $title ?>">
+				</div>
+		
+				  <div class="form-group">
+					 <label for="description">Movie Description:</label>
+					 <textarea type="text" class="form-control"  id="description" name="movie_desc" value="<?php echo $content ?>"></textarea>
+				 	</div>
+		  		<?php
+
+		  		global $wpdb;
+		   		$posts = $wpdb->get_results( "SELECT $wpdb->term_taxonomy.term_taxonomy_id, $wpdb->terms.name 
+		   			FROM $wpdb->terms INNER JOIN $wpdb->term_taxonomy 
+		   			ON $wpdb->terms.term_id= $wpdb->term_taxonomy.term_id WHERE taxonomy='genre' ");
+		   		//echo $posts[1]->term_id;
+
+		  		?>
+		  		<div class="form-group">
+			  		<label for="genre">Select Genre:</label>
+			  		<select name="genre" class="form-control" id="genre">
+			  		<option value="" >--Select Genre--</option>
+			  	<?php foreach($posts as $post){?>
+			  		<option value="<?php echo $post->term_taxonomy_id;?>" ><?php echo $post->name; ?></option>
+			  	<?php } ?>
+			  		</select>	  	
+		 		 </div>	 
+  					<button type="submit" value="submit" class="btn btn-primary"  name="save-btn">Submit</button>
+			</form>
+			</div>
+	       			<?php
+	       		}
+	       	  }
+	        }
+	 		  
+          }
+        } 
+        else {
+            // no movies found
+            ?><h1>Sorry...</h1>
+          <p><?php _e('Sorry, no movies found.'); ?></p>
+          <?php
+            } 
+          ?>
+    </div>
+</div>
+<?php
+/* Restore original Post Data */
+wp_reset_postdata();
+do_action('to_open_form', 'open_editing_form');
 
 
 });
