@@ -150,7 +150,7 @@ add_shortcode('movie-button',function($atts,$content=null){
 	
 	  	<div class="form-group">
 		  <label for="description">Movie Description:</label>
-		  <textarea type="text" class="form-control" placeholder="Enter Movie Description" id="description" name="movie_desc"></textarea>
+		  <textarea  class="form-control" placeholder="Enter Movie Description" id="description" name="movie_desc"></textarea>
 	 	 </div>
   		<?php
 
@@ -377,12 +377,12 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
                  	<input type="hidden" name="title" value="<?php the_title() ?>" ></td></tr>
                  <tr><th width="130">Movie Description</th>
                  <td width="200"><h6 class="content"><?php the_content(); ?></h6>
-                 	<input type="hidden" name="content" value="<?php the_content() ?>" ></td></tr>
+                 	<input type="hidden" name="content" value="<?php the_content(); ?>" ></td></tr>
                  <tr><th width="130">Movie Author</th>
                  <td width="200"><h6 class="author"><?php the_author(); ?></h6></td></tr>
                  <tr><th width="130">Movie Genre</th>
                  <td width="200"><h6 class="genre"><?php echo $genre[0]->name; ?></h6>
-                 	<input type="hidden" name="genre" value="<?php $genre[0]->name; ?>" ></td></tr>
+                 	<input type="hidden" name="genre" value="<?php $genre[0]->term_taxonomy_id; ?>" ></td></tr>
              	</table>
              	<button type="submit" value="submit" name="btn">Edit</button>
                 </form>
@@ -390,15 +390,17 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
        <?php
 	       
 	       if(isset($_POST['btn'])){
-	       	$id=$_POST['id'];
-	       	$title=$_POST['title'];
-	       	$content=$_POST['content'];
-	       	$genre=$_POST['genre'];
+	       		
 	       	add_action('to_open_form', 'open_editing_form');
 	       	if (!function_exists('open_editing_form'))
 	       	 {
 	       		function open_editing_form()
+
 	       		{
+	       			$id=$_POST['id'];
+	       			$title=$_POST['title'];
+	       			$content=wp_strip_all_tags($_POST['content']);
+	       			$genre=$_POST['genre'];
 	       			
 	       			?>
 	       		<div class="container add-movie">
@@ -411,7 +413,7 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
 		
 				  <div class="form-group">
 					 <label for="description">Movie Description:</label>
-					 <textarea type="text" class="form-control"  id="description" name="movie_desc" value="<?php echo $content ?>"></textarea>
+					 <input type="text" class="form-control"  id="description" name="movie_desc" value="<?php echo $content; ?>">
 				 	</div>
 		  		<?php
 
@@ -427,7 +429,9 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
 			  		<select name="genre" class="form-control" id="genre">
 			  		<option value="" >--Select Genre--</option>
 			  	<?php foreach($posts as $post){?>
-			  		<option value="<?php echo $post->term_taxonomy_id;?>" ><?php echo $post->name; ?></option>
+			  		<option value="<?php echo $post->term_taxonomy_id;?>"
+			  		 <?php if($post->term_taxonomy_id==$genre) {echo"selected";}?> ><?php 
+			  		echo $post->name; ?></option>
 			  	<?php } ?>
 			  		</select>	  	
 		 		 </div>	 
