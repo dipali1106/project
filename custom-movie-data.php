@@ -196,6 +196,7 @@ function displayFm(){
     $movie_desc=$_POST['movie_desc'];
     $genre=$_POST['genre'];
 
+  // Create post object
  	$user_id = get_current_user_id();
 
 
@@ -436,22 +437,24 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
 			</form>
 			</div>
 	       			<?php
-				     global $wpdb;
-				  if(isset($_POST['save-button'])){
-				  	$name=$_POST['update_name'];
-				    $movie_desc=$_POST['update_desc'];
-				    $genre=$_POST['update_genre'];
-				 	$user_id = get_current_user_id();
+	       			global $wpdb;
+          if(isset($_POST['save-button'])){
+            $name=$_POST['update_name'];
+            $movie_desc=$_POST['update_desc'];
+            $genre=$_POST['update_genre'];
+
+          // Create post object
+          $user_id = get_current_user_id();
 
 
-				
-
-	       		}
+            }
+				    
 	       	  }
 	        }
 	 		  
           }
         } 
+    }
         else {
             // no movies found
             ?><h1>Sorry...</h1>
