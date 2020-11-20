@@ -407,6 +407,7 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
   				<form  action="" id="edit-movie" method="post" >
 			  	<div class="form-group">
 			  		<label for="name">Movie Name:</label>
+			  		<input type="hidden" id="post_id" name="id" value="<?php echo $id ?>">
 			  		<input type="text" class="form-control"  id="name" name="update_name" value="<?php echo $title ?>">
 			  		
 				</div>
@@ -426,7 +427,7 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
 			  		<label for="genre">Select Genre:</label>
 			  		<select name="update_genre" class="form-control" id="genre">
 			  			<option value="" >--Select Genre--</option>
-			  	<?php foreach($posts as $post){?>
+			  		<?php foreach($posts as $post){?>
 			  		<option value="<?php echo $post->term_taxonomy_id;?>"
 			  		 <?php if($post->term_taxonomy_id==$genre) {echo"selected";} ?> ><?php 
 			  		echo $post->name; ?></option>
@@ -439,14 +440,30 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
 	       			<?php
 	       			global $wpdb;
           if(isset($_POST['save-button'])){
-            $name=$_POST['update_name'];
-            $movie_desc=$_POST['update_desc'];
-            $genre=$_POST['update_genre'];
+          	echo "<script type='text/javascript'>
+	        window.location=document.location.href;
+	        </script>";
+	          	$id=$_POST['id'];
+	            $name=$_POST['update_name'];
+	            $movie_desc=$_POST['update_desc'];
+	            $genre=$_POST['update_genre'];
+	            echo $name;
+	            $query=$wpdb->update('wp_term_relationships', 
+			        array(
+			          'term_taxonomy_id'      => $genre
+			        ),
+			        array(
+			          'object_id'   =>$id)    
+			        );  
+	             $my_post = array(
+			      'ID'           => $id,
+			      //'post_author'=>$user_id,
+			      'post_title'   => $name,
+			      'post_content' => $movie_desc,
+			      );  
+			      wp_update_post($my_post);
 
-          // Create post object
-          $user_id = get_current_user_id();
-
-
+	                      
             }
 				    
 	       	  }
@@ -468,7 +485,7 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
 /* Restore original Post Data */
 wp_reset_postdata();
 do_action('to_open_form', 'open_editing_form');
-
+	
 
 });
 ?>
