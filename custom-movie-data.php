@@ -183,22 +183,19 @@ add_shortcode('movie-button',function($atts,$content=null){
 	}
 </style>
 <script>
-	
+/*	
 function displayFm(){
       $("#add-movie").toggle('show');
-    }
+    }*/
    </script>
  
   <?php
-
-//require_once(ABSPATH.'wp-admin/includes/upgrade.php');
   global $wpdb;
   if(isset($_POST['save-btn'])){
   	$name=$_POST['movie_name'];
     $movie_desc=$_POST['movie_desc'];
     $genre=$_POST['genre'];
 
-  // Create post object
  	$user_id = get_current_user_id();
 
 
@@ -382,7 +379,7 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
                  <td width="200"><h6 class="author"><?php the_author(); ?></h6></td></tr>
                  <tr><th width="130">Movie Genre</th>
                  <td width="200"><h6 class="genre"><?php echo $genre[0]->name; ?></h6>
-                 	<input type="hidden" name="genre" value="<?php $genre[0]->term_taxonomy_id; ?>" ></td></tr>
+                 	<input type="hidden" name="movie_genre" value="<?php echo $genre[0]->term_taxonomy_id; ?>" ></td></tr>
              	</table>
              	<button type="submit" value="submit" name="btn">Edit</button>
                 </form>
@@ -399,46 +396,56 @@ add_shortcode('movie-edit-button',function($atts,$content=null){
 	       		{
 	       			$id=$_POST['id'];
 	       			$title=$_POST['title'];
+	       			$genre=$_POST['movie_genre'];
 	       			$content=wp_strip_all_tags($_POST['content']);
-	       			$genre=$_POST['genre'];
+	       			
 	       			
 	       			?>
-	       		<div class="container add-movie">
+	       		<div class="container edit-movie">
   					
-  				<form  action="" id="add-movie" method="post" >
+  				<form  action="" id="edit-movie" method="post" >
 			  	<div class="form-group">
 			  		<label for="name">Movie Name:</label>
-			  		<input type="text" class="form-control"  id="name" name="movie_name" value="<?php echo $title ?>">
+			  		<input type="text" class="form-control"  id="name" name="update_name" value="<?php echo $title ?>">
+			  		
 				</div>
 		
 				  <div class="form-group">
 					 <label for="description">Movie Description:</label>
-					 <input type="text" class="form-control"  id="description" name="movie_desc" value="<?php echo $content; ?>">
+					 <input type="text" class="form-control"  id="description" name="update_desc" value="<?php echo $content; ?>">
 				 	</div>
 		  		<?php
 
 		  		global $wpdb;
 		   		$posts = $wpdb->get_results( "SELECT $wpdb->term_taxonomy.term_taxonomy_id, $wpdb->terms.name 
 		   			FROM $wpdb->terms INNER JOIN $wpdb->term_taxonomy 
-		   			ON $wpdb->terms.term_id= $wpdb->term_taxonomy.term_id WHERE taxonomy='genre' ");
-		   		//echo $posts[1]->term_id;
-
+		   			ON $wpdb->terms.term_id= $wpdb->term_taxonomy.term_id WHERE taxonomy='genre' ");		   		
 		  		?>
 		  		<div class="form-group">
 			  		<label for="genre">Select Genre:</label>
-			  		<select name="genre" class="form-control" id="genre">
-			  		<option value="" >--Select Genre--</option>
+			  		<select name="update_genre" class="form-control" id="genre">
+			  			<option value="" >--Select Genre--</option>
 			  	<?php foreach($posts as $post){?>
 			  		<option value="<?php echo $post->term_taxonomy_id;?>"
-			  		 <?php if($post->term_taxonomy_id==$genre) {echo"selected";}?> ><?php 
+			  		 <?php if($post->term_taxonomy_id==$genre) {echo"selected";} ?> ><?php 
 			  		echo $post->name; ?></option>
 			  	<?php } ?>
 			  		</select>	  	
 		 		 </div>	 
-  					<button type="submit" value="submit" class="btn btn-primary"  name="save-btn">Submit</button>
+  					<button type="submit" value="submit" class="btn btn-primary"  name="save-button">Submit</button>
 			</form>
 			</div>
 	       			<?php
+				     global $wpdb;
+				  if(isset($_POST['save-button'])){
+				  	$name=$_POST['update_name'];
+				    $movie_desc=$_POST['update_desc'];
+				    $genre=$_POST['update_genre'];
+				 	$user_id = get_current_user_id();
+
+
+				
+
 	       		}
 	       	  }
 	        }
