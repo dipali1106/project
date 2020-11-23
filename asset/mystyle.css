@@ -1,0 +1,32 @@
+
+   .container{
+    display:flex;
+    flex-direction: column;
+        flex-wrap: wrap;
+   }
+   .grid-item{
+    margin-bottom: 20px;
+   }
+   /*.grid{
+          display: flex;
+          flex-direction: column;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          min-height: 440px;
+      }
+   .grid-item{
+                  
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-width: 400px;
+    min-height: 300px;
+    padding: 1px;
+    margin:0rem;
+    border: 2px solid black;
+   }
+   .grid-item ul li{
+    list-style: none;
+   }
+   
